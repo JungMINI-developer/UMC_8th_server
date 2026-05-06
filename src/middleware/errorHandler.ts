@@ -9,9 +9,11 @@ export const errorHandler = (
 ): void => {
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
+      resultType: "FAIL",
+      statusCode: err.statusCode,
       errorCode: err.errorCode,
       reason: err.reason,
-      data: null,
+      data: err.data,
     });
     return;
   }
