@@ -21,7 +21,7 @@ app.get("/health", (_req: Request, res: Response) => {
 });
 
 app.get("/test-error", (_req, _res, next) => {                
-  throw new AppError("TEST_ERROR", "테스트 에러입니다", 400);
+  throw new AppError(404, "TEST_ERROR", "테스트 에러입니다");
 });
 
 app.use(errorHandler);
