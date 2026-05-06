@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  userId     Int       @id @default(autoincrement())
+  email      String    @unique
+  password   String?
+  provider   String?
+  providerId String?
+  name       String
+  profile    String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  lps      Lp[]
+  comments Comment[]
+  likes    Like[]
+  stars    Star[]
+
+  @@unique([provider, providerId])
+}
+
+model Lp {
+  lpId        Int       @id @default(autoincrement())
+  authorId    Int
+  title       String
+  lpJacket    String?
+  description String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  author   User           @relation(fields: [authorId], references: [userId])
+  comments Comment[]
+  likes    Like[]
+  stars    Star[]
+  tags     LpTagMapping[]
+}
+
+model Star {
+  starId Int     @id @default(autoincrement())
+  userId Int
+  lpId   Int
+  rate   Decimal
+
+  user User @relation(fields: [userId], references: [userId])
+  lp   Lp   @relation(fields: [lpId], references: [lpId])
+
+  @@unique([userId, lpId])
+}
+
+model Like {
+  likeId    Int      @id @default(autoincrement())
+  userId    Int
+  lpId      Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [userId])
+  lp   Lp   @relation(fields: [lpId], references: [lpId])
+
+  @@unique([userId, lpId])
+}
+
+model Comment {
+  commentId Int       @id @default(autoincrement())
+  authorId  Int
+  lpId      Int
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  author User @relation(fields: [authorId], references: [userId])
+  lp     Lp   @relation(fields: [lpId], references: [lpId])
+}
+
+model Tag {
+  tagId   Int    @id @default(autoincrement())
+  tagName String
+
+  lps LpTagMapping[]
+}
+
+model LpTagMapping {
+  lpTagId Int @id @default(autoincrement())
+  lpId    Int
+  tagId   Int
+
+  lp  Lp  @relation(fields: [lpId], references: [lpId])
+  tag Tag @relation(fields: [tagId], references: [tagId])
+
+  @@unique([lpId, tagId])
+}
