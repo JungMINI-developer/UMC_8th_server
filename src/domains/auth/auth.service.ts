@@ -20,9 +20,9 @@ export const signup = async (data: {
   }
 
   const hashedPassword = await bcrypt.hash(data.password, 10);
-  const user = await createUser({ ...data, password: hashedPassword });
+  await createUser({ ...data, password: hashedPassword });
 
-  return { accessToken: generateToken(user.userId) };
+  return { message: "회원가입이 완료되었습니다" };
 };
 
 export const login = async (data: { email: string; password: string }) => {
@@ -36,5 +36,12 @@ export const login = async (data: { email: string; password: string }) => {
     throw new AppError(401, "INVALID_CREDENTIALS", "이메일 또는 비밀번호가 올바르지 않습니다");
   }
 
-  return { accessToken: generateToken(user.userId) };
+  return {
+    accessToken: generateToken(user.userId),
+    user: {
+      id: user.userId,
+      email: user.email,
+      nickname: user.name,
+    },
+  };
 };

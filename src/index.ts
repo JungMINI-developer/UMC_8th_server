@@ -21,7 +21,7 @@ app.get("/health", (_req: Request, res: Response) => {
   return success(res, { status: "ok" });
 });
 
-app.use("/api", router);
+app.use("/api/v1", router);
 
 app.get("/test-error", (_req, _res, next) => {                
   throw new AppError(404, "TEST_ERROR", "테스트 에러입니다");
