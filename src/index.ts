@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express, { Request, Response } from "express";
+import type { Server } from "http";
 import { prisma } from "./db.prisma";
 import helmet from "helmet";
 import cors from "cors";
@@ -29,14 +30,56 @@ app.get("/test-error", (_req, _res, next) => {
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+let server: Server | undefined;
 
-const shutdown = async () => {
-  await prisma.$disconnect();
-  process.exit(0); 
+const startServer = (attempt = 0): void => {
+  const s = app.listen(PORT);
+
+  s.once("listening", () => {
+    server = s;
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+
+  s.once("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE" && attempt < 10) {
+      console.warn(
+        `Port ${PORT} busy, retry ${attempt + 1}/10 in 300ms...`
+      );
+      setTimeout(() => startServer(attempt + 1), 300);
+      return;
+    }
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  });
 };
 
-process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);
+startServer();
+
+let shuttingDown = false;
+const shutdown = (signal: string) => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`\n[${signal}] shutting down...`);
+
+  if (!server) {
+    prisma.$disconnect().finally(() => process.exit(0));
+    return;
+  }
+
+  server.closeAllConnections?.();
+
+  server.close(async (err) => {
+    if (err) console.error("server.close error:", err);
+    await prisma.$disconnect();
+    console.log("shutdown complete");
+    process.exit(0);
+  });
+
+  setTimeout(() => {
+    console.error("force exit after timeout");
+    process.exit(1);
+  }, 3000).unref();
+};
+
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
