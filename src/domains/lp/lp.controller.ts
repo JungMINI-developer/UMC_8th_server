@@ -55,7 +55,7 @@ export const getLpByIdHandler = async (
   next: NextFunction
 ) => {
   try {
-    const result = await getLpById(parseId(req.params.id));
+    const result = await getLpById(parseId(req.params.id as string));
     return success(res, result);
   } catch (err) {
     next(err);
@@ -69,7 +69,7 @@ export const updateLpHandler = async (
 ) => {
   try {
     const { title, description, lpJacket } = req.body;
-    const result = await updateLp(parseId(req.params.id), req.userId!, {
+    const result = await updateLp(parseId(req.params.id as string), req.userId!, {
       title,
       description,
       lpJacket,
@@ -86,7 +86,7 @@ export const deleteLpHandler = async (
   next: NextFunction
 ) => {
   try {
-    const result = await deleteLp(parseId(req.params.id), req.userId!);
+    const result = await deleteLp(parseId(req.params.id as string), req.userId!);
     return success(res, result);
   } catch (err) {
     next(err);
