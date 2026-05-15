@@ -80,9 +80,21 @@ model Comment {
   lp     Lp   @relation(fields: [lpId], references: [lpId])
 }
 
+enum TagName {
+  JAZZ
+  POP
+  ROCK
+  HIPHOP
+  CLASSIC
+  RNB
+  ELECTRONIC
+  INDIE
+  BALLAD
+}
+
 model Tag {
-  tagId   Int    @id @default(autoincrement())
-  tagName String
+  tagId   Int     @id @default(autoincrement())
+  tagName TagName @unique
 
   lps LpTagMapping[]
 }
